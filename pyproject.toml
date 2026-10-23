@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gradient-domain-editing-and-panorama-stitching"
+version = "0.1.0"
+description = "Image blending (naive, Laplacian pyramid, Poisson) and feature-based panorama stitching, written from scratch"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "scipy",
+    "opencv-python",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+# to run the notebooks and the tests:  pip install -e ".[dev]"
+dev = [
+    "pytest",
+    "jupyter",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
