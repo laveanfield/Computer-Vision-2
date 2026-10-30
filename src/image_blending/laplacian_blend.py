@@ -185,9 +185,9 @@ def laplacian_blend(image_data: dict, num_levels: int = 6) -> np.ndarray:
 
     target_region = target[H_min:H_max, W_min:W_max].copy()
 
-    src_u8 = (source        * 255).astype(np.uint8)
+    src_u8 = (source * 255).astype(np.uint8)
     tgt_u8 = (target_region * 255).astype(np.uint8)
-    msk_u8 = (mask          * 255).astype(np.uint8)
+    msk_u8 = (mask * 255).astype(np.uint8)
 
     mask_bin = (msk_u8 > 128).astype(np.uint8)
     if mask_bin.ndim == 2:
