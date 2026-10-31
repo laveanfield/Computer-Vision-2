@@ -20,11 +20,11 @@ Gradient-Domain-Editing-and-Panorama-Stitching/
 ├── pyproject.toml              # packaging and dependencies: `pip install -e ".[dev]"` makes src/ importable
 ├── src/
 │   ├── image_blending/         # Part 1
-│       ├── config.py
-│       ├── utils.py
-│       ├── naive_blend.py
-│       ├── laplacian_blend.py
-│       └── poisson_blend.py
+│   │   ├── config.py
+│   │   ├── utils.py
+│   │   ├── naive_blend.py
+│   │   ├── laplacian_blend.py
+│   │   └── poisson_blend.py
 │   └── panorama/               # Part 2
 │       ├── features.py
 │       ├── harris_mops.py
@@ -37,15 +37,16 @@ Gradient-Domain-Editing-and-Panorama-Stitching/
 │       ├── metrics.py, viz.py
 │       └── config.py
 ├── notebooks/
-│   ├── demo.ipynb              # Part 1: run and compare the three blending methods
-│   └── demo_panorama.ipynb     # Part 2: derivations, experiments, discussion (executed)
+│   ├── demo_image_blending.ipynb   # Part 1: run and compare the three blending methods
+│   └── demo_panorama.ipynb         # Part 2: derivations, experiments, discussion (executed)
 ├── data/
 │   ├── image_blending/
 │   └── panorama/
 ├── scripts/                    # run_scenes.py, run_synthetic.py, make_figures.py (experiments and charts)
 │                               # describe_scenes.py, analyse_overlap_bands.py, analyse_chain_drift.py (diagnostics)
-│                               # make_report_figures.py (figures of the report)
-├── tests/test_panorama.py
+├── tests/                      # pytest: unit_test/ and e2e_test/ for each part (see Tests)
+│   ├── image_blending/
+│   └── panorama/
 ├── docs/
 └── run_panorama.py             # command line front end of Part 2
 ```
@@ -57,6 +58,62 @@ py -3.12 -m venv venv
 venv/Scripts/activate           # Linux/macOS: source venv/bin/activate
 pip install -e ".[dev]"
 ```
+
+## Tests
+
+The tests live in `tests/` and are split per part into **unit tests** (`unit_test/`, one file per module) and **end-to-end tests** (`e2e_test/`, a whole pipeline):
+
+```text
+tests/
+├── image_blending/                       # Part 1
+│   ├── e2e_test/
+│   │   └── test_blending_pipeline_e2e.py # end-to-end multi-image blending
+│   └── unit_test/
+│       ├── test_config.py                # hyperparameter schemas and validation
+│       ├── test_laplacian_blend.py       # Gaussian and Laplacian pyramid blending
+│       ├── test_naive_blend.py           # cut-and-paste linear alpha baseline
+│       ├── test_poisson_blend.py         # discrete Poisson solver (gradient domain)
+│       └── test_utils.py                 # colour conversions, gradients, pyramid maths
+└── panorama/                             # Part 2
+    ├── e2e_test/
+    │   └── test_stitcher_e2e.py          # complete multi-image stitching pipeline
+    └── unit_test/
+        ├── test_blend.py                 # multi-band and feather seam blending
+        ├── test_config.py                # stitching configuration and dataclasses
+        ├── test_features.py              # SIFT / ORB extractors and keypoints
+        ├── test_harris_mops.py           # Harris corners, ANMS and MOPS descriptors
+        ├── test_homography.py            # DLT, conditioning, RANSAC, LM refinement
+        ├── test_matching.py              # nearest-neighbour matching and Lowe ratio test
+        ├── test_metrics.py               # PSNR, SSIM and reprojection metrics
+        ├── test_synthetic.py             # synthetic views and difficulty sweeps
+        └── test_warp.py                  # projective transformation and canvas layout
+```
+
+| subsystem | test files | tests | statement and branch coverage |
+|---|---:|---:|---:|
+| Image blending | 6 | 40 | 100 % |
+| Panorama | 10 | 100 | 100 % |
+| **Total** | **16** | **140** | **100 %** (≈ 9.3 s) |
+
+The tests use `pytest` and `pytest-cov` (both installed by `pip install -e ".[dev]"`). Run them from the repository root:
+
+```bash
+# everything, with line and branch coverage and an HTML report in coverage_html/
+python -m pytest --cov=src --cov-report=term-missing --cov-report=html:coverage_html tests/
+
+# one part, with its own coverage
+python -m pytest --cov=src/image_blending --cov-report=term-missing tests/image_blending/
+python -m pytest --cov=src/panorama --cov-report=term-missing tests/panorama/
+
+# one layer
+python -m pytest tests/image_blending/unit_test/ tests/panorama/unit_test/
+python -m pytest tests/image_blending/e2e_test/ tests/panorama/e2e_test/
+
+# one file
+python -m pytest tests/panorama/unit_test/test_homography.py -v
+```
+
+Open `coverage_html/index.html` in a browser to browse the coverage report (Windows: `start coverage_html/index.html`; macOS: `open ...`; Linux: `xdg-open ...`). The checks of Part 2 compare each component with an independent reference (see [Part 2](#part-2-panorama-stitching)).
 
 The results in this repository were produced with Python 3.13, OpenCV 5.0.0, NumPy 2.5, SciPy 1.18 and Matplotlib 3.11.
 
