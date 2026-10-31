@@ -9,7 +9,7 @@ Two classic image-compositing problems, implemented from scratch, rebuilding the
 
 The two parts meet in the last stage of the panorama: the multi-band blender of Part 2 generalises Part 1's two-image Laplacian blending to *K* images and re-uses its pyramid operators (`build_gaussian_pyramid`, `build_laplacian_pyramid`, `pyr_up`).
 
-**Contents:** [Project structure](#project-structure) · [Setup](#setup) · [Part 1: Image blending](#part-1--image-blending) · [Part 2: Panorama stitching](#part-2--panorama-stitching) · [References](#references)
+**Contents:** [Project structure](#project-structure) · [Setup](#setup) · [Tests](#tests) · [Part 1: Image blending](#part-1-image-blending) · [Part 2: Panorama stitching](#part-2-panorama-stitching) · [References](#references)
 
 ---
 
