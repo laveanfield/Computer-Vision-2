@@ -18,9 +18,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# to run the notebooks and the tests:  pip install -e ".[dev]"
 dev = [
     "pytest",
+    "pytest-cov",
+    "coverage",
     "jupyter",
 ]
 
@@ -33,3 +34,32 @@ include = ["*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = [
+    "src/image_blending",
+    "src/panorama",
+]
+omit = [
+    "src/panorama/viz.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if __name__ == .__main__.:",
+    "cv2.imshow",
+    "cv2.waitKey",
+    "cv2.setMouseCallback",
+    "plt.show",
+]
+
+[tool.coverage.html]
+directory = "coverage_html"
+title = "Computer Vision 2 - Test Coverage Report"

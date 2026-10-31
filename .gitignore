@@ -13,6 +13,10 @@ dist/
 .pytest_cache/
 # .ipynb_checkpoints/
 
+# Coverage
+.coverage
+coverage_html/
+
 # Env
 .env
 venv/
