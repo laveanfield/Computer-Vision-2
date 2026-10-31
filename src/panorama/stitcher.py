@@ -344,7 +344,8 @@ class PanoramaStitcher:
 
     # stage 1 : features
     def compute_features(self, images: list[np.ndarray]) -> list[Features]:
-        """Detects keypoints and extracts descriptors for a list of images.
+        """
+        Detects keypoints and extracts descriptors for a list of images.
 
         Args:
             images (list[np.ndarray]): A list of preprocessed BGR images.
@@ -357,7 +358,8 @@ class PanoramaStitcher:
 
     # stage 2 : pairwise geometry
     def estimate_pair(self, feats: list[Features], shapes: list[tuple[int, int]], i: int, j: int) -> PairInfo:
-        """Matches features and estimates a homography between two images.
+        """
+        Matches features and estimates a homography between two images.
 
         Args:
             feats (list[Features]): Extracted features for all images.
@@ -372,9 +374,11 @@ class PanoramaStitcher:
         t0 = time.perf_counter()
         m = match_features(feats[i], feats[j], ratio=cfg.ratio, mutual=cfg.mutual, unique=cfg.unique_matches)
         t1 = time.perf_counter()
-        H, inl, info = ransac_homography(feats[i].kpts[m.idx1], feats[j].kpts[m.idx2], thresh=cfg.ransac_thresh,
-                                         confidence=cfg.ransac_conf, max_iters=cfg.ransac_max_iters,
-                                         seed=cfg.seed + 1000 * i + j)
+        H, inl, info = ransac_homography(
+            feats[i].kpts[m.idx1], feats[j].kpts[m.idx2], thresh=cfg.ransac_thresh,
+            confidence=cfg.ransac_conf, max_iters=cfg.ransac_max_iters,
+            seed=cfg.seed + 1000 * i + j
+        )
         t2 = time.perf_counter()
         n_in = int(inl.sum())
         src_in, dst_in = feats[i].kpts[m.idx1[inl]], feats[j].kpts[m.idx2[inl]]
@@ -383,8 +387,10 @@ class PanoramaStitcher:
         # H is determined iff the DLT matrix of the inliers has rank 8  <=>  s_8 / s_1 is not ~0.
         rank = dlt_conditioning(src_in, dst_in) if n_in >= 4 else 0.0
         cov = min(_hull_fraction(src_in, shapes[i]), _hull_fraction(dst_in, shapes[j])) if n_in >= 3 else 0.0
-        plausible = (H is not None and footprint_ok(H, shapes[i], cfg.max_area_ratio)
-                     and footprint_ok(np.linalg.inv(H), shapes[j], cfg.max_area_ratio))
+        plausible = (
+            H is not None and footprint_ok(H, shapes[i], cfg.max_area_ratio)
+            and footprint_ok(np.linalg.inv(H), shapes[j], cfg.max_area_ratio)
+        )
         valid = bool(n_in >= cfg.min_inliers and rank >= cfg.min_rank_ratio and plausible)
         return PairInfo(i, j, H, m, inl, n_in, info["iterations"], info["rmse"], cov, rank, t1 - t0, t2 - t1, valid)
 
@@ -454,7 +460,7 @@ class PanoramaStitcher:
             for c in adj[p]:
                 if c in H_root:
                     continue
-                H_cp = pairs[(c, p)].H if (c, p) in pairs else np.linalg.inv(pairs[(p, c)].H)   # maps c -> p
+                H_cp = pairs[(c, p)].H if (c, p) in pairs else np.linalg.inv(pairs[(p, c)].H) # maps c -> p
                 H_root[c] = normalize_homography(H_root[p] @ H_cp)
                 queue.append(c)
         used = sorted(comp)

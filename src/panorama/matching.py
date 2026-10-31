@@ -1,4 +1,5 @@
-"""Feature matching from scratch (NumPy only).
+"""
+Feature matching from scratch (NumPy only).
 
 Implements brute-force 2-nearest-neighbours search, Lowe's ratio test, and an optional 
 mutual (cross-check) matching strategy.

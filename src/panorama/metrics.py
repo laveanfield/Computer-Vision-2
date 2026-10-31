@@ -1,13 +1,6 @@
 """
 Quality measures for the stitching experiments.
 
-Functions:
-  * overlap_photometric_error: Measures how well two *warped* images agree inside their overlap. 
-    This needs no ground truth and reacts to misalignment (ghosting) as well as exposure differences.
-  * overlap_ncc_bands: Measures the same agreement resolved in horizontal bands to show *where* 
-    two images disagree.
-  * homography_rms_error: Measures the geometric accuracy against a known ground-truth homography 
-    (used in synthetic tests).
 """
 from __future__ import annotations
 

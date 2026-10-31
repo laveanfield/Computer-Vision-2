@@ -3,9 +3,10 @@ Feature detection and description.
 
 Three extractors share one interface (`detect_and_describe`) so that the *same* stitching pipeline can be run
 with each of them and the results compared fairly:
-    - sift: OpenCV SIFT, DoG scale-space extrema, gradient-orientation histograms, 128 floats (L2)
-    - orb: OpenCV ORB, oriented FAST corners on an image pyramid + rotated BRIEF, 256 bits (Hamming)
-    - harris: Harris corners + MOPS patches written from scratch in harris_mops.py, 64 floats (L2)
+* sift: OpenCV SIFT, DoG scale-space extrema, gradient-orientation histograms, 128 floats (L2)
+* orb: OpenCV ORB, oriented FAST corners on an image pyramid + rotated BRIEF, 256 bits (Hamming)
+* harris: Harris corners + MOPS patches written from scratch in harris_mops.py, 64 floats (L2)
+
 
 """
 from __future__ import annotations

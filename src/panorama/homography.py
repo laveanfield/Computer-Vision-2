@@ -3,14 +3,6 @@ Planar homography estimation, written from scratch (NumPy only).
 
     x' ~ H x ,   x = (x, y, 1)^T ,  H in R^{3x3} (defined up to scale -> 8 degrees of freedom)
 
-Contents:
-    apply_homography      project 2-D points with H
-    normalize_points      Hartley isotropic normalisation
-    dlt_homography        (normalised) Direct Linear Transform via SVD
-    dlt_conditioning      s_8 / s_1 of the DLT matrix: is H determined uniquely by the correspondences?
-    footprint_ok          plausibility of the image footprint H(rectangle)
-    ransac_homography     RANSAC with adaptive iteration count + least-squares re-fit + LM refinement
-    refine_homography     Levenberg-Marquardt minimisation of the geometric (reprojection) error
 """
 from __future__ import annotations
 
@@ -21,7 +13,8 @@ import numpy as np
 #=================================================
 
 def apply_homography(H: np.ndarray, pts: np.ndarray) -> np.ndarray:
-    """Projects 2-D points using a 3x3 homography matrix.
+    """
+    Projects 2-D points using a 3x3 homography matrix.
 
     Points mapped to infinity (homogeneous coordinate w ~ 0) result in NaN values.
 
@@ -42,7 +35,8 @@ def apply_homography(H: np.ndarray, pts: np.ndarray) -> np.ndarray:
 
 
 def reprojection_error(H: np.ndarray, src: np.ndarray, dst: np.ndarray) -> np.ndarray:
-    """Computes the forward transfer error || pi(H x_i) - x'_i || in pixels.
+    """
+    Computes the forward transfer error || pi(H x_i) - x'_i || in pixels.
 
     Args:
         H (np.ndarray): The 3x3 homography matrix.
@@ -58,7 +52,8 @@ def reprojection_error(H: np.ndarray, src: np.ndarray, dst: np.ndarray) -> np.nd
 
 
 def symmetric_transfer_error(H: np.ndarray, src: np.ndarray, dst: np.ndarray) -> np.ndarray:
-    """Computes the symmetric transfer error: d(x', Hx)^2 + d(x, H^-1 x')^2.
+    """
+    Computes the symmetric transfer error: d(x', Hx)^2 + d(x, H^-1 x')^2.
 
     Ref: Hartley & Zisserman, eq. 4.7.
 
@@ -76,7 +71,8 @@ def symmetric_transfer_error(H: np.ndarray, src: np.ndarray, dst: np.ndarray) ->
 
 
 def normalize_homography(H: np.ndarray) -> np.ndarray:
-    """Normalizes the scale of the homography matrix.
+    """
+    Normalizes the scale of the homography matrix.
 
     Ensures that H[2, 2] = 1. If H[2, 2] is near zero, falls back to normalizing 
     by the Frobenius norm.
@@ -98,7 +94,8 @@ def normalize_homography(H: np.ndarray) -> np.ndarray:
 #=================================================
 
 def normalize_points(pts: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Applies Hartley isotropic normalization to a set of points.
+    """
+    Applies Hartley isotropic normalization to a set of points.
 
     Translates the centroid to the origin and scales the points so that the mean 
     distance to the origin is sqrt(2).
@@ -122,7 +119,8 @@ def normalize_points(pts: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
 
 
 def dlt_homography(src: np.ndarray, dst: np.ndarray, normalize: bool = True) -> np.ndarray | None:
-    """Computes the Direct Linear Transform (DLT) to estimate a homography.
+    """
+    Computes the Direct Linear Transform (DLT) to estimate a homography.
 
     Each correspondence x -> x' provides two independent linear equations in the nine entries of H:
         [ 0  0  0 | -x -y -1 |  v x  v y  v ] h = 0
@@ -171,7 +169,8 @@ def dlt_homography(src: np.ndarray, dst: np.ndarray, normalize: bool = True) -> 
 
 
 def dlt_conditioning(src: np.ndarray, dst: np.ndarray) -> float:
-    """Evaluates the degeneracy of a correspondence set for DLT estimation.
+    """
+    Evaluates the degeneracy of a correspondence set for DLT estimation.
 
     Calculates the ratio s_8 / s_1 of the second-smallest to the largest singular value 
     of the normalized DLT matrix A. The homography H is uniquely determined if and only if 
@@ -203,7 +202,8 @@ def dlt_conditioning(src: np.ndarray, dst: np.ndarray) -> float:
 
 
 def footprint_ok(H: np.ndarray, shape: tuple[int, int], max_area_ratio: float = 25.0) -> bool:
-    """Checks if the homography represents a plausible image-to-image mapping.
+    """
+    Checks if the homography represents a plausible image-to-image mapping.
 
     Evaluates the transformation of the image rectangle through H to ensure:
       1. No point is sent to infinity (w must have the same sign at all corners), guaranteeing a convex quadrilateral.
@@ -239,7 +239,8 @@ def footprint_ok(H: np.ndarray, shape: tuple[int, int], max_area_ratio: float = 
 #=================================================
 
 def _lm_residual_jacobian(h8: np.ndarray, src: np.ndarray, dst: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Computes the residuals and Jacobian for Levenberg-Marquardt refinement.
+    """
+    Computes the residuals and Jacobian for Levenberg-Marquardt refinement.
 
     Calculates the residuals r = pi(Hx) - x' and the Jacobian dr/dh, where 
     H = [[h0, h1, h2], [h3, h4, h5], [h6, h7, 1]].
@@ -275,7 +276,8 @@ def _lm_residual_jacobian(h8: np.ndarray, src: np.ndarray, dst: np.ndarray) -> t
 
 
 def refine_homography(H: np.ndarray, src: np.ndarray, dst: np.ndarray, max_iters: int = 30) -> np.ndarray:
-    """Minimizes the geometric reprojection error using the Levenberg-Marquardt algorithm.
+    """
+    Minimizes the geometric reprojection error using the Levenberg-Marquardt algorithm.
 
     Unlike the algebraic error used in DLT, this minimizes the true geometric distance
     sum_i ||pi(H x_i) - x'_i||^2. The optimization operates in Hartley-normalized coordinates.
@@ -331,7 +333,8 @@ def refine_homography(H: np.ndarray, src: np.ndarray, dst: np.ndarray, max_iters
 #=================================================
 
 def _orientation(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> tuple[float, float]:
-    """Computes the signed double-area and 'sine' of the angle for triangle abc.
+    """
+    Computes the signed double-area and 'sine' of the angle for triangle abc.
 
     Args:
         a (np.ndarray): Coordinate of point A.
@@ -349,7 +352,8 @@ def _orientation(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> tuple[float, fl
 
 
 def _is_good_sample(s4: np.ndarray, d4: np.ndarray, min_sine: float = 0.02) -> bool:
-    """Checks the geometric validity of a minimal sample of 4 point pairs.
+    """
+    Checks the geometric validity of a minimal sample of 4 point pairs.
 
     A sample is rejected if any 3 of the 4 points are nearly collinear in either image,
     or if the orientation of any defined triangle flips between views (indicating a reflection).
@@ -371,7 +375,8 @@ def _is_good_sample(s4: np.ndarray, d4: np.ndarray, min_sine: float = 0.02) -> b
 
 
 def required_iterations(inlier_ratio: float, confidence: float, sample_size: int = 4) -> float:
-    """Computes the required number of RANSAC iterations to find an outlier-free sample.
+    """
+    Computes the required number of RANSAC iterations to find an outlier-free sample.
 
     Solves for N in the inequality: 1 - (1 - w^s)^N >= p, 
     which simplifies to N >= log(1 - p) / log(1 - w^s), where w is the inlier ratio.
@@ -401,7 +406,8 @@ def ransac_homography(
     seed: int | None = 0,
     refine: bool = True,
 ) -> tuple[np.ndarray | None, np.ndarray, dict]:
-    """Robustly estimates a homography from putative correspondences using RANSAC.
+    """
+    Robustly estimates a homography from putative correspondences using RANSAC.
 
     The algorithm repeatedly draws minimal 4-point samples, computes an exact DLT homography, 
     and counts inliers below a reprojection threshold. The number of trials adapts dynamically 
